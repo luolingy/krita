@@ -198,10 +198,13 @@ public:
     };
 
     inline bool actionsSuppressed() const {
-#ifndef Q_OS_ANDROID
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
         return suppressAllActions || !cursorEntered;
 #else
         // when S-pen is not pointing the canvas, actions on canvas are disabled, till it points back to canvas.
+        // On iOS neither touches nor Apple Pencil generate Enter/Leave events
+        // reliably (there is no hover state on most devices), so we cannot
+        // depend on them either.
         return suppressAllActions;
 #endif
     }

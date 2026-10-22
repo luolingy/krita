@@ -565,7 +565,7 @@ bool KisInputManager::eventFilterImpl(QEvent * event)
         retval = !wasScrolled;
         break;
     }
-#ifndef Q_OS_ANDROID
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
     case QEvent::Enter:
         KisInputEventsEater::debugEvent<QEvent>(event);
         //Make sure the input actions know we are active.
