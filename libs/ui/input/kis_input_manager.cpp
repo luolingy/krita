@@ -681,7 +681,7 @@ bool KisInputManager::eventFilterImpl(QEvent * event)
         }
         QTouchEvent *touchEvent = static_cast<QTouchEvent*>(event);
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         const int pressedCount = KisTouchShortcut::countTouchPoints(touchEvent, KisTouchShortcut::pressedOnlyTouchStates());
         const int totalPointCount = KisTouchShortcut::countTouchPoints(touchEvent, KisTouchShortcut::allTouchStates());
 

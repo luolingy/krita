@@ -268,7 +268,7 @@ bool KisInputEventsEater::eventFilter(QObject* target, QEvent* event )
                (shouldEatMouseEvents
             // On Mac, we need mouse events when the tablet is in proximity, but not pressed down
             // since tablet move events are not generated until after tablet press.
-            #ifndef Q_OS_MAC
+            #ifndef Q_OS_MACOS
                 || (static_cast<QMouseEvent*>(event)->source() != Qt::MouseEventNotSynthesized)
             #endif
                 )) {

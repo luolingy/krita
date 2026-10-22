@@ -236,7 +236,7 @@ void ThemeManager::populateThemeMenu()
         actionMap.insert(name, action);
     }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     // Add a "System" theme, which resets the palette to system colors
     // It only seems to work as expected on macOS.
     action = new QAction("System", d->themeMenuActionGroup);

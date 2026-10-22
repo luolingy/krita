@@ -95,7 +95,7 @@ LcmsEnginePlugin::LcmsEnginePlugin(QObject *parent, const QVariantList &)
 
     QStringList iccProfileDirs;
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     iccProfileDirs.append(QDir::homePath() + "/Library/ColorSync/Profiles/");
     iccProfileDirs.append("/System/Library/ColorSync/Profiles/");
     iccProfileDirs.append("/Library/ColorSync/Profiles/");
