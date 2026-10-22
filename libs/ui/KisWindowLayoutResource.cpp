@@ -391,6 +391,12 @@ void KisWindowLayoutResource::loadXml(const QDomElement &element) const
                              "Workspaces with multiple windows isn't supported on Android");
         return;
     }
+#elif defined(Q_OS_IOS)
+    if (element.firstChildElement("window") != element.lastChildElement("window")) {
+        QMessageBox::warning(qApp->activeWindow(), i18nc("@title:window", "Krita"),
+                             "Workspaces with multiple windows isn't supported on iOS");
+        return;
+    }
 #endif
 
     for (auto windowElement = element.firstChildElement("window");

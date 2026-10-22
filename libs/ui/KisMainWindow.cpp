@@ -1049,6 +1049,12 @@ void KisMainWindow::setCanvasDetached(bool detach)
         QMessageBox::warning(this, i18nc("@title:window", "Krita"),
                              "Detach Canvas is unsupported on Android");
     }
+#elif defined(Q_OS_IOS)
+    // iOS can show only one window at a time
+    if (detach) {
+        QMessageBox::warning(this, i18nc("@title:window", "Krita"),
+                             "Detach Canvas is unsupported on iOS");
+    }
 #else
     if (detach == canvasDetached()) return;
 
@@ -2721,7 +2727,7 @@ void KisMainWindow::updateWindowMenu()
     QMenu *menu = d->windowMenu->menu();
     menu->clear();
 
-#ifndef Q_OS_ANDROID
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
     menu->addAction(d->newWindow);
 #endif
     menu->addAction(d->documentMenu);
@@ -2983,6 +2989,12 @@ void KisMainWindow::newWindow()
                              "Creating a New Main Window is unsupported on Android");
         return;
     }
+#elif defined(Q_OS_IOS)
+    if (KisPart::instance()->currentMainwindow()) {
+        QMessageBox::warning(this, i18nc("@title:window", "Krita"),
+                             "Creating a New Main Window is unsupported on iOS");
+        return;
+    }
 #endif
     KisMainWindow *mainWindow = KisPart::instance()->createMainWindow();
     mainWindow->initializeGeometry();
@@ -3146,7 +3158,7 @@ void KisMainWindow::createActions()
     d->resetConfigurations  = actionManager->createAction("reset_configurations");
     connect(d->resetConfigurations, SIGNAL(triggered()), this, SLOT(slotResetConfigurations()));
 
-#ifndef Q_OS_ANDROID
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS)
     d->toggleDetachCanvas = actionManager->createAction("view_detached_canvas");
     d->toggleDetachCanvas->setChecked(false);
     connect(d->toggleDetachCanvas, SIGNAL(toggled(bool)), SLOT(setCanvasDetached(bool)));
@@ -3201,7 +3213,7 @@ void KisMainWindow::createActions()
         connect(d->changeInterfaceScale, &QAction::triggered, this, &KisMainWindow::slotChangeInterfaceScale);
     }
 #endif
-#else
+#elif !defined(Q_OS_IOS)
     d->newWindow = actionManager->createAction("view_newwindow");
     connect(d->newWindow, SIGNAL(triggered(bool)), this, SLOT(newWindow()));
 #endif
