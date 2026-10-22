@@ -250,7 +250,7 @@ KisApplication::KisApplication(const QString &key, int &argc, char **argv)
     if (!widgetStyleFromConfig.isEmpty()) {
         qApp->setStyle(widgetStyleFromConfig);
     }
-#if defined Q_OS_WIN || defined Q_OS_MACOS || defined Q_OS_ANDROID
+#if defined Q_OS_WIN || defined Q_OS_MACOS || defined Q_OS_ANDROID || defined Q_OS_IOS
     else {
         // default to Fusion instead of styles that use native theming
         qApp->setStyle("fusion");

@@ -538,7 +538,7 @@ GeneralTab::GeneralTab(QWidget *_parent, const char *_name)
 
     KConfigGroup group = KSharedConfig::openConfig()->group("File Dialogs");
     bool dontUseNative = true;
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(Q_OS_IOS)
     dontUseNative = false;
 #endif
 #ifdef Q_OS_UNIX
@@ -824,7 +824,7 @@ void GeneralTab::setDefault()
     m_showEraserOutlinePainting->setChecked(cfg.showEraserOutlineWhilePainting(true));
     m_changeEraserBrushOutline->setChecked(!cfg.forceAlwaysFullSizedEraserOutline(true));
 
-#if defined Q_OS_ANDROID || defined Q_OS_MACOS || defined Q_OS_WIN
+#if defined Q_OS_ANDROID || defined Q_OS_MACOS || defined Q_OS_WIN || defined Q_OS_IOS
     m_chkNativeFileDialog->setChecked(true);
 #else
     m_chkNativeFileDialog->setChecked(false);

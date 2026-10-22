@@ -156,6 +156,11 @@ void KoFileDialog::createFileDialog()
 #ifdef Q_OS_ANDROID
     dontUseNative = false;
 #endif
+#ifdef Q_OS_IOS
+    // the native dialog gives access to the documents outside of the
+    // application sandbox via the document picker
+    dontUseNative = false;
+#endif
 #ifdef Q_OS_UNIX
     if (qgetenv("XDG_CURRENT_DESKTOP") == "KDE") {
         dontUseNative = false;
@@ -355,7 +360,7 @@ QString KoFileDialog::filename()
             retryNeeded = true;
 
 // We can only write to the Uri that was returned, we don't have permission to change the Uri.
-#if !(defined(Q_OS_MACOS) || defined(Q_OS_ANDROID))
+#if !(defined(Q_OS_MACOS) || defined(Q_OS_ANDROID) || defined(Q_OS_IOS))
             url = url + extension;
 #endif
         }

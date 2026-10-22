@@ -685,7 +685,9 @@ if (!qEnvironmentVariableIsEmpty("KRITA_OPENGL_DEBUG")) {
             KisApplication::setLayoutDirection(Qt::LeftToRight);
         }
     }
-#ifdef Q_OS_ANDROID
+#if defined Q_OS_ANDROID || defined Q_OS_IOS
+    // there is no global menu bar on mobile platforms, keep the menu
+    // bar inside the main window
     KisApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
 #endif
 
