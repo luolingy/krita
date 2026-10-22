@@ -39,6 +39,12 @@
     #define GL_MULTISAMPLE_EXT GL_MULTISAMPLE
 #endif
 
+#if defined(Q_OS_IOS) && !defined(GL_MULTISAMPLE_EXT)
+    // The OpenGL ES headers of the iOS SDK don't define it either
+    // (GL_EXT_multisample_compatibility)
+    #define GL_MULTISAMPLE_EXT 0x809D
+#endif
+
 class KisMirrorAxis::Private
 {
 public:

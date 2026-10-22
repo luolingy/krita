@@ -65,6 +65,19 @@
 #define GL_RGBA16_EXT 0x805B
 #endif
 
+// may be missing from the OpenGL ES 3 headers (e.g. the ones of the iOS SDK)
+#ifndef GL_RGBA16F_EXT
+#define GL_RGBA16F_EXT 0x881A
+#endif
+
+#ifndef GL_RGBA32F_EXT
+#define GL_RGBA32F_EXT 0x8814
+#endif
+
+#ifndef GL_HALF_FLOAT_OES
+#define GL_HALF_FLOAT_OES 0x8D61
+#endif
+
 //#define DEBUG_BUFFER_REALLOCATION
 
 

@@ -10,6 +10,16 @@ if (ANDROID)
     endif()
 endif()
 
+if (IOS)
+    # Qt for iOS always uses OpenGL ES (with Apple's headers), but Qt 6
+    # doesn't define the QT_OPENGL_ES_* macros any more, which Krita uses
+    # to pick the OpenGL ES code paths.
+    add_definitions(-DQT_OPENGL_ES_2)
+    if (QT_FEATURE_opengles3)
+        add_definitions(-DQT_OPENGL_ES_3)
+    endif()
+endif()
+
 add_subdirectory( tests )
 
 if (APPLE AND NOT IOS)
