@@ -1,5 +1,5 @@
 add_subdirectory( version )
-if(APPLE)
+if(APPLE AND NOT IOS)
     add_subdirectory( macosutils )
 endif()
 add_subdirectory( global )

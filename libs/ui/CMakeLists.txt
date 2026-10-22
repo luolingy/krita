@@ -12,7 +12,7 @@ endif()
 
 add_subdirectory( tests )
 
-if (APPLE)
+if (APPLE AND NOT IOS)
     find_library(FOUNDATION_LIBRARY Foundation)
     find_library(APPKIT_LIBRARY AppKit)
 endif ()
@@ -565,7 +565,7 @@ if (ENABLE_UPDATERS)
 endif()
 
 
-if(APPLE)
+if(APPLE AND NOT IOS)
     set(kritaui_LIB_SRCS
         ${kritaui_LIB_SRCS}
         input/kis_extended_modifiers_mapper_osx.mm
@@ -816,7 +816,7 @@ if (HAIKU)
   target_link_libraries(kritaui PRIVATE network expat iconv intl)
 endif()
 
-if(APPLE)
+if(APPLE AND NOT IOS)
     target_link_libraries(kritaui
         PUBLIC
         kritamacosutils
@@ -849,7 +849,7 @@ set_target_properties(kritaui
 install(TARGETS kritaui  ${INSTALL_TARGETS_DEFAULT_ARGS})
 
 
-if (APPLE)
+if (APPLE AND NOT IOS)
     install(FILES osx.stylesheet DESTINATION ${KDE_INSTALL_DATADIR}/krita)
 endif ()
 

@@ -14,7 +14,9 @@ endif()
 set(krita_SRCS main.cc)
 
 # Set the application icon on the application
-if (NOT APPLE)
+if (IOS)
+    # On iOS the icon is provided by the asset catalog, see packaging/ios
+elseif (NOT APPLE)
 	file(GLOB ICON_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/pics/branding/${BRANDING}/*-apps-krita.png")
 else()
     # XCode below 26 cannot work with .icon format
@@ -77,13 +79,13 @@ if (WIN32)
             ${CMAKE_CURRENT_BINARY_DIR}/kritafile.ico
         DESTINATION ${CMAKE_INSTALL_PREFIX}/installer
     )
-elseif(APPLE)
+elseif(APPLE AND NOT IOS)
     if(${XCODE_VERSION} VERSION_GREATER_EQUAL "26.0")
       set_source_files_properties(${ASSETS_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     else()
       ecm_add_app_icon(krita_SRCS OUTFILE_BASENAME krita ICONS ${ICON_SRCS})
     endif()
-else()
+elseif(NOT IOS)
     ecm_add_app_icon(krita_SRCS ICONS ${ICON_SRCS})
 endif()
 
@@ -224,7 +226,7 @@ if(HAVE_KCRASH)
     target_link_libraries(krita PRIVATE KF${KF_MAJOR}::Crash)
 endif()
 
-if (APPLE)
+if (APPLE AND NOT IOS)
     set(KRITA_VERSION_NUMBER_STRING "${KRITA_STABLE_VERSION_MAJOR}.${KRITA_STABLE_VERSION_MINOR}.${KRITA_VERSION_RELEASE}")
     set_target_properties(krita PROPERTIES INSTALL_RPATH "@loader_path/../../../../lib;@loader_path/../lib;
         @loader_path/../Frameworks;@executable_path/../../../../lib;@executable_path/../lib;@executable_path/../Frameworks")
@@ -256,7 +258,7 @@ if (NOT ANDROID)
 endif()
 
 
-if(APPLE)
+if(APPLE AND NOT IOS)
     set(KRITA_ASSET_KRZ_ICNS "krita-krz.icns" "krita-kra.icns")
     add_custom_command(
       OUTPUT ${KRITA_ASSET_KRZ_ICNS}

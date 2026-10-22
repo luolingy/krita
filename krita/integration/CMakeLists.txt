@@ -1,4 +1,4 @@
-if (APPLE)
+if (APPLE AND NOT IOS)
 project(kritaintegration)
 
 if (NOT MACOS_UNIVERSAL)
@@ -18,4 +18,4 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Build/UninstalledProducts/macosx/k
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Build/UninstalledProducts/macosx/krita-thumbnailer.appex DESTINATION ${KDE_INSTALL_PLUGINDIR})
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Build/UninstalledProducts/macosx/krita-preview.appex DESTINATION ${KDE_INSTALL_PLUGINDIR})
-endif(APPLE)
+endif()
