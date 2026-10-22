@@ -1,0 +1,13 @@
+--- a/src/util/kurlhandler_p.cpp
++++ b/src/util/kurlhandler_p.cpp
+@@ -28,8 +28,10 @@
+             u.setPath(appName);
+         }
+ 
++#if QT_CONFIG(process)
+         QProcess::startDetached(helpcenter, QStringList(u.toString()));
+         return true;
++#endif
+     }
+ 
+     return false;

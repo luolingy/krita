@@ -1,0 +1,14 @@
+--- a/src/kmimetypeeditor.cpp
++++ b/src/kmimetypeeditor.cpp
+@@ -31,7 +31,11 @@
+         return;
+     }
+ 
++#if QT_CONFIG(process)
+     const bool result = QProcess::startDetached(exec, args);
++#else
++    const bool result = false;
++#endif
+     if (!result) {
+         auto *dlg =
+             new KMessageDialog(KMessageDialog::Error, QObject::tr("Could not start the \"keditfiletype\" executable, please check your installation."), widget);

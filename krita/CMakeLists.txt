@@ -208,6 +208,9 @@ elseif (WIN32)
     # Build the main implementation into a DLL to be called by a stub EXE.
     kis_add_library(krita SHARED ${krita_SRCS})
     set_target_properties(krita PROPERTIES PREFIX "")
+elseif (IOS)
+    # qt_finalize_target() is called by krita_ios_setup_bundle() below
+    qt_add_executable(krita MANUAL_FINALIZATION ${krita_SRCS})
 else()
     add_executable(krita ${krita_SRCS})
 endif()
@@ -238,6 +241,9 @@ if (APPLE AND NOT IOS)
     set_target_properties(krita PROPERTIES MACOSX_BUNDLE_SHORT_VERSION_STRING ${KRITA_VERSION_NUMBER_STRING})
     set_target_properties(krita PROPERTIES MACOSX_BUNDLE_BUNDLE_VERSION ${KRITA_VERSION_NUMBER_STRING})
     set_target_properties(krita PROPERTIES MACOSX_BUNDLE_COPYRIGHT "GNU Public License, V2 or, at your option, any later version.")
+elseif (IOS)
+    include(${CMAKE_SOURCE_DIR}/packaging/ios/KritaIosBundle.cmake)
+    krita_ios_setup_bundle(krita)
 endif ()
 
 # Command-line tools cannot be run on mobile platforms
@@ -278,6 +284,8 @@ if(APPLE AND NOT IOS)
     endif()
     target_sources(krita PRIVATE ${KRITA_ASSET_KRZ_ICNS})
 
+    install(TARGETS krita ${INSTALL_TARGETS_DEFAULT_ARGS} BUNDLE DESTINATION bin)
+elseif(IOS)
     install(TARGETS krita ${INSTALL_TARGETS_DEFAULT_ARGS} BUNDLE DESTINATION bin)
 else()
     install(TARGETS krita ${INSTALL_TARGETS_DEFAULT_ARGS})

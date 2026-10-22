@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    SPDX-FileCopyrightText: 2026 luolingy <152292963+luolingy@users.noreply.github.com>
+    SPDX-License-Identifier: GPL-2.0-or-later
+
+    Info.plist template for the iOS application bundle. It is configured
+    by CMake (MACOSX_BUNDLE_INFO_PLIST property), see KritaIosBundle.cmake.
+-->
+<plist version="1.0">
+<dict>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleName</key>
+    <string>${MACOSX_BUNDLE_BUNDLE_NAME}</string>
+    <key>CFBundleDisplayName</key>
+    <string>${MACOSX_BUNDLE_BUNDLE_NAME}</string>
+    <key>CFBundleIdentifier</key>
+    <string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>
+    <key>CFBundleExecutable</key>
+    <string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
+    <key>CFBundleVersion</key>
+    <string>${MACOSX_BUNDLE_BUNDLE_VERSION}</string>
+    <key>CFBundleShortVersionString</key>
+    <string>${MACOSX_BUNDLE_SHORT_VERSION_STRING}</string>
+    <key>CFBundleLongVersionString</key>
+    <string>${MACOSX_BUNDLE_LONG_VERSION_STRING}</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>${MACOSX_BUNDLE_COPYRIGHT}</string>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleAllowMixedLocalizations</key>
+    <true/>
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.graphics-design</string>
+
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+        <string>arm64</string>
+    </array>
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+
+    <!-- Krita can show only one main window, so don't let iPadOS split
+         the screen between Krita and another application -->
+    <key>UIRequiresFullScreen</key>
+    <true/>
+    <key>UIStatusBarHidden</key>
+    <true/>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+
+    <!-- Make the application's Documents folder visible in the Files app
+         and allow editing the documents opened from the Files app in place.
+         We don't use UIDocumentBrowserViewController as the main interface,
+         so UISupportsDocumentBrowser is disabled. -->
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+    <key>UISupportsDocumentBrowser</key>
+    <false/>
+
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Krita File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Owner</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>org.krita.kra</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Krita Archival File</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Owner</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>org.krita.krz</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Krita Brush Preset</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Owner</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>org.krita.kpp</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>OpenRaster Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Default</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>org.openraster.ora</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Photoshop Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.adobe.photoshop-image</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>PNG Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.png</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>JPEG Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.jpeg</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>TIFF Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.tiff</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>WebP Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>org.webmproject.webp</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>JPEG XL Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.jpeg-xl</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>HEIF Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.heic</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>AVIF Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.avif</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>GIF Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.compuserve.gif</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>BMP Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.microsoft.bmp</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>SVG Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.svg-image</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>OpenEXR Image</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>LSHandlerRank</key>
+            <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.ilm.openexr-image</string>
+            </array>
+        </dict>
+    </array>
+    <key>UTExportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+                <string>public.image</string>
+            </array>
+            <key>UTTypeDescription</key>
+            <string>Krita Image File</string>
+            <key>UTTypeIdentifier</key>
+            <string>org.krita.kra</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>kra</string>
+                </array>
+                <key>public.mime-type</key>
+                <array>
+                    <string>application/x-krita</string>
+                </array>
+            </dict>
+        </dict>
+        <dict>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+                <string>public.archive</string>
+                <string>public.image</string>
+            </array>
+            <key>UTTypeDescription</key>
+            <string>Krita Archival File</string>
+            <key>UTTypeIdentifier</key>
+            <string>org.krita.krz</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>krz</string>
+                </array>
+                <key>public.mime-type</key>
+                <array>
+                    <string>application/x-krita-krz</string>
+                </array>
+            </dict>
+        </dict>
+        <dict>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+                <string>public.image</string>
+            </array>
+            <key>UTTypeDescription</key>
+            <string>Krita Presets File</string>
+            <key>UTTypeIdentifier</key>
+            <string>org.krita.kpp</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>kpp</string>
+                </array>
+                <key>public.mime-type</key>
+                <array>
+                    <string>application/x-krita-kpp</string>
+                </array>
+            </dict>
+        </dict>
+    </array>
+    <key>UTImportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+                <string>public.image</string>
+            </array>
+            <key>UTTypeDescription</key>
+            <string>Openraster Image</string>
+            <key>UTTypeIdentifier</key>
+            <string>org.openraster.ora</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>ora</string>
+                </array>
+                <key>public.mime-type</key>
+                <array>
+                    <string>image/openraster</string>
+                </array>
+            </dict>
+        </dict>
+    </array>
+</dict>
+</plist>

@@ -1,0 +1,11 @@
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -71,7 +71,7 @@
+     target_link_libraries(KF6GuiAddons PRIVATE advapi32)
+ endif()
+ 
+-if(APPLE)
++if(APPLE AND NOT IOS)
+     find_library(APPKIT_LIBRARY AppKit)
+     target_sources(KF6GuiAddons PRIVATE colors/kcolorschemewatcher_mac.mm)
+     target_link_libraries(KF6GuiAddons PRIVATE ${APPKIT_LIBRARY})

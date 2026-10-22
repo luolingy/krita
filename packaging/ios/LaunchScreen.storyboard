@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    SPDX-FileCopyrightText: 2026 luolingy <152292963+luolingy@users.noreply.github.com>
+    SPDX-License-Identifier: GPL-2.0-or-later
+
+    Launch screen shown by iOS while Krita starts. It is intentionally
+    plain: Krita shows its own splash screen once Qt is up.
+-->
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="22155" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="KRT-LS-VC0">
+    <device id="retina6_12" orientation="portrait" appearance="dark"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22131"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <scene sceneID="KRT-LS-SC0">
+            <objects>
+                <viewController id="KRT-LS-VC0" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="KRT-LS-VW0">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Krita" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KRT-LS-LB0">
+                                <rect key="frame" x="146" y="405" width="101" height="42"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="35"/>
+                                <color key="textColor" white="0.90000000000000002" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="KRT-LS-SA0"/>
+                        <color key="backgroundColor" white="0.16" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="KRT-LS-LB0" firstAttribute="centerX" secondItem="KRT-LS-VW0" secondAttribute="centerX" id="KRT-LS-CX0"/>
+                            <constraint firstItem="KRT-LS-LB0" firstAttribute="centerY" secondItem="KRT-LS-VW0" secondAttribute="centerY" id="KRT-LS-CY0"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="KRT-LS-FR0" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="0" y="0"/>
+        </scene>
+    </scenes>
+</document>

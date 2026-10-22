@@ -1,0 +1,24 @@
+--- a/src/lib/CMakeLists.txt
++++ b/src/lib/CMakeLists.txt
+@@ -76,13 +76,19 @@
+     )
+ endif ()
+ 
+-if (UNIX AND NOT IOS)
++if (UNIX)
++    # used by KShell and KMacroExpander, which are built on all platforms
+     target_sources(KF6CoreAddons PRIVATE
+         text/kmacroexpander_unix.cpp
+-        util/klistopenfilesjob_unix.cpp
+         util/kuser_unix.cpp
+         util/kshell_unix.cpp
+     )
++endif()
++
++if (UNIX AND NOT IOS)
++    target_sources(KF6CoreAddons PRIVATE
++        util/klistopenfilesjob_unix.cpp
++    )
+     if (HAVE_PROCSTAT)
+         target_sources(KF6CoreAddons PRIVATE
+             util/kprocesslist_unix_procstat.cpp
