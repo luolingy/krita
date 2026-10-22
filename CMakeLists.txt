@@ -13,6 +13,12 @@ message(STATUS "Using CMake version: ${CMAKE_VERSION}")
 # Qt5 is the default, set QT_MAJOR_VERSION to 6 to look for Qt6
 option(BUILD_WITH_QT6 "Build against Qt 6" OFF)
 
+if (IOS AND NOT BUILD_WITH_QT6)
+    # Qt5 for iOS is available only as static libraries, but Krita is built
+    # as a set of shared libraries and dynamically loaded plugins
+    message(FATAL_ERROR "Krita for iOS can be built against Qt 6 only. Please pass -DBUILD_WITH_QT6=ON")
+endif()
+
 if (BUILD_WITH_QT6)
 set(MIN_QT_VERSION 6.0.0)
 set(MIN_FRAMEWORKS_VERSION 6.0.0)
@@ -84,7 +90,7 @@ endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if (APPLE)
+if (APPLE AND NOT IOS)
     add_subdirectory(packaging/macos)
 
     if(NOT CMAKE_GENERATOR MATCHES "Xcode")
@@ -110,6 +116,20 @@ if (APPLE)
         message(STATUS "CMake OSX architectures: ${CMAKE_OSX_ARCHITECTURES}")
     endif()
 
+elseif (IOS)
+    # The deployment target and the SDK are defined by the toolchain file
+    # (usually the one provided by Qt's qt-cmake), so we don't touch them here
+    message(STATUS "iOS SDK: ${CMAKE_OSX_SYSROOT}")
+    message(STATUS "iOS deployment target: ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    if (CMAKE_OSX_ARCHITECTURES)
+        message(STATUS "iOS architectures: ${CMAKE_OSX_ARCHITECTURES}")
+    endif()
+    set(APPLE_SUPPRESS_X11_WARNING TRUE)
+    set(KDE_SKIP_RPATH_SETTINGS TRUE)
+    set(CMAKE_FIND_FRAMEWORK LAST)
+    set(CMAKE_MACOSX_RPATH 1)
+    set(BUILD_WITH_INSTALL_RPATH 1)
+    add_definitions(-Wno-macro-redefined -Wno-deprecated-register)
 endif()
 
 function(macos_test_fixrpath)
@@ -341,7 +361,13 @@ add_feature_info("Limit long tests" LIMIT_LONG_TESTS "Run long running unittests
 option(BUILD_KRITA_QT_DESIGNER_PLUGINS "Build Qt Designer plugins for Krita widgets" OFF)
 add_feature_info("Build Qt Designer plugins" BUILD_KRITA_QT_DESIGNER_PLUGINS "Builds Qt Designer plugins for Krita widgets (use -DBUILD_KRITA_QT_DESIGNER_PLUGINS=ON to enable).")
 
-option(ENABLE_UPDATERS "Enable updaters/update notifications" ON)
+if (IOS)
+    # applications on iOS are updated via the App Store only
+    set(ENABLE_UPDATERS_DEFAULT OFF)
+else()
+    set(ENABLE_UPDATERS_DEFAULT ON)
+endif()
+option(ENABLE_UPDATERS "Enable updaters/update notifications" ${ENABLE_UPDATERS_DEFAULT})
 configure_file(config-updaters.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-updaters.h)
 add_feature_info("Enable updaters" ENABLE_UPDATERS "Enable updaters/update notifications.")
 
@@ -354,6 +380,15 @@ if(ANDROID)
 option(ANDROID_ENABLE_STDIO_FORWARDING "Enable forwarding of qDebug() and stdio messages to logcat" OFF)
 configure_file(config-android-stdio-forwarding.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config-android-stdio-forwarding.h)
 add_feature_info("Enable debug logging on Android" ANDROID_ENABLE_STDIO_FORWARDING "Enable forwarding of qDebug() and stdio messages to logcat")
+endif()
+
+if(IOS)
+# There is no need for an equivalent of ANDROID_ENABLE_STDIO_FORWARDING on iOS:
+# Qt's default message handler already forwards qDebug() to the unified
+# logging system (Xcode console and Console.app).
+set(KRITA_IOS_BUNDLE_IDENTIFIER "org.krita" CACHE STRING "Bundle identifier of the iOS application")
+set(KRITA_IOS_DEVELOPMENT_TEAM "" CACHE STRING "Apple Development Team ID used for signing the iOS application (empty means no automatic signing)")
+add_feature_info("iOS bundle identifier" ON "${KRITA_IOS_BUNDLE_IDENTIFIER}")
 endif()
 
 set(ADDRESS_SANITIZER_ENABLED FALSE)
@@ -453,6 +488,10 @@ if(WIN32)
             message(FATAL_ERROR "Compiling with Python library failed, please check whether the architecture is correct!\nCMakeError.log:\n  ${ERROR_LOG}\n\n")
         endif (NOT CAN_USE_PYTHON_LIBS)
     endif (Python_FOUND)
+elseif(IOS)
+    # There is no way to ship and embed a Python interpreter on iOS yet,
+    # so the Python plugin is disabled there
+    message(STATUS "Python scripting is not supported on iOS")
 else(WIN32)
     find_package(PythonLibrary 3.8)
 endif(WIN32)
@@ -575,6 +614,32 @@ if (ANDROID)
             REQUIRED COMPONENTS
             AndroidExtras
         )
+    endif()
+endif()
+
+if (IOS)
+    # Krita consists of several shared libraries and a lot of dynamically
+    # loaded plugins. When Qt is linked statically (which is the default for
+    # Qt for iOS), every one of them gets its own copy of Qt's global state,
+    # so the resulting bundle will not work. Shared Qt builds for iOS are
+    # supported since Qt 6.12.
+    get_target_property(KRITA_IOS_QT_CORE_TYPE Qt${QT_MAJOR_VERSION}::Core TYPE)
+    if (KRITA_IOS_QT_CORE_TYPE STREQUAL "STATIC_LIBRARY")
+        message(WARNING "Qt for iOS is built as static libraries. Such a build of Krita is useful "
+            "for compile-testing only, the resulting application will not work. Please use "
+            "a shared build of Qt (6.12 or later) to get a working application.")
+        # Qt links its static plugins, including the iOS platform plugin
+        # that references main(), into every shared library and module
+        string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl,-U,_main")
+        string(APPEND CMAKE_MODULE_LINKER_FLAGS " -Wl,-U,_main")
+        # The classes of a static Qt have no visibility attributes, so with
+        # -fvisibility=hidden (set by KDECompilerSettings) they are hidden in
+        # Krita's libraries, and so are the exported template instances that
+        # use them as arguments (e.g. KisCurveWidgetControlsManager<QSpinBox>),
+        # which then can't be linked from other libraries
+        set(CMAKE_C_VISIBILITY_PRESET default)
+        set(CMAKE_CXX_VISIBILITY_PRESET default)
+        set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
     endif()
 endif()
 
