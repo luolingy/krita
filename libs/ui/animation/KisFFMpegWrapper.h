@@ -16,7 +16,9 @@
 
 #include <kritaui_export.h>
 
+#if QT_CONFIG(process)
 class QProcess;
+#endif
 
 struct KRITAUI_EXPORT KisFFMpegWrapperSettings
 {
@@ -95,11 +97,15 @@ private:
      * @return bool -> Whether we support a video format based on it's internal streams.
      */
     bool ffprobeCheckStreamsValid(const QJsonObject& ffprobeJsonObj, const QString& ffprobeSTDERR);
-    
+
+#if QT_CONFIG(process)
     static void fixUpNonEmbeddedProcessEnvironment(const QString &processPath, QProcess &process);
+#endif
 
 private:
+#if QT_CONFIG(process)
     QScopedPointer<QProcess> m_process;
+#endif
     QSharedPointer<QProgressDialog> m_progress = nullptr;
     KisFFMpegWrapperSettings m_processSettings;
     
