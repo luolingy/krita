@@ -142,6 +142,11 @@ QString getInstallationPrefix() {
     return bundlePath;
 #elif defined(Q_OS_HAIKU)
 	return qApp->applicationDirPath() + "/";
+#elif defined(Q_OS_IOS)
+    // On iOS the application bundle is flat: the executable lives in the
+    // root of the bundle and the data is deployed into Krita.app/share/,
+    // see packaging/ios
+    return qApp->applicationDirPath() + "/";
 #elif defined(Q_OS_ANDROID)
     // qApp->applicationDirPath() isn't writable and android system won't allow
     // any files other than libraries

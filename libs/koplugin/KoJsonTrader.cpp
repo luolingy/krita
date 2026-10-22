@@ -38,6 +38,15 @@ KoJsonTrader::KoJsonTrader()
     if (m_pluginPath.isEmpty() ||
         !(QFileInfo(m_pluginPath).exists() && QFileInfo(m_pluginPath).isDir())) {
 
+#ifdef Q_OS_IOS
+        // On iOS all the libraries, including the plugins, are deployed into
+        // the Frameworks directory of the application bundle, since that is
+        // the only place where the system allows loadable code to reside
+        QDir frameworksDir(qApp->applicationDirPath());
+        if (frameworksDir.cd("Frameworks")) {
+            m_pluginPath = frameworksDir.absolutePath();
+        }
+#else
         QList<QDir> searchDirs;
 
         QDir appDir(qApp->applicationDirPath());
@@ -114,6 +123,7 @@ KoJsonTrader::KoJsonTrader()
                 break;
             }
         }
+#endif
         dbgPlugins << "KoJsonTrader will load its plugins from" << m_pluginPath;
     }
 
