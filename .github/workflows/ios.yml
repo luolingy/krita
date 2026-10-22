@@ -1,0 +1,293 @@
+# Experimental iOS compile check for the ios-support branch of this fork.
+# This workflow is not part of upstream Krita (which uses KDE's GitLab CI).
+#
+# It uses the official (static) Qt for iOS binaries from aqtinstall, so it
+# only checks that Krita configures and compiles for iOS; the resulting
+# bundle would not run (see packaging/ios/README.md).
+#
+# Two jobs, each well below the 6h limit:
+#   deps  - builds the iOS dependencies with packaging/ios/build-deps-ios.sh
+#           and caches them (keyed on the script and the Qt version)
+#   krita - restores Qt and the dependencies and builds Krita with Ninja,
+#           using ccache so that re-runs after fixes are fast
+
+name: iOS build (experimental)
+
+on:
+  push:
+    branches:
+      - ios-support
+  workflow_dispatch:
+    inputs:
+      qt_version:
+        description: 'Qt version (must be available in aqtinstall for both mac/desktop and mac/ios)'
+        required: false
+        default: '6.11.0'
+      rebuild_deps:
+        description: 'Ignore the cached dependencies and rebuild them'
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    # explicit bash enables -o pipefail, so "| tee" doesn't hide failures
+    shell: bash
+
+env:
+  QT_VERSION: ${{ inputs.qt_version || '6.11.0' }}
+  # qttasktree is needed by the QML plugins that Qt6Quick pulls in
+  QT_MODULES: qt5compat qtshadertools qtimageformats qttasktree
+  IOS_DEPLOYMENT_TARGET: '17.0'
+  # bump to invalidate all the caches
+  CACHE_EPOCH: v1
+
+jobs:
+  deps:
+    name: Build iOS dependencies
+    runs-on: macos-15
+    timeout-minutes: 300
+    outputs:
+      deps-key: ${{ steps.keys.outputs.deps-key }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check Xcode and the iOS SDK
+        run: |
+          xcodebuild -version
+          if ! xcrun --sdk iphoneos --show-sdk-path >/dev/null 2>&1; then
+            echo "iOS SDK is missing, downloading the iOS platform"
+            xcodebuild -downloadPlatform iOS
+          fi
+          xcrun --sdk iphoneos --show-sdk-path
+          xcrun --sdk iphoneos --show-sdk-version
+
+      - name: Compute cache keys
+        id: keys
+        run: |
+          xcode_version="$(xcodebuild -version | awk 'NR==1' | tr -cd '[:alnum:].')"
+          modules_hash="$(echo "$QT_MODULES" | shasum | cut -c1-8)"
+          echo "qt-key=qt-${CACHE_EPOCH}-${QT_VERSION}-${modules_hash}-${xcode_version}-${{ runner.os }}-${{ runner.arch }}" >> "$GITHUB_OUTPUT"
+          echo "partial-prefix=ios-deps-partial-${CACHE_EPOCH}-${QT_VERSION}-${xcode_version}-" >> "$GITHUB_OUTPUT"
+          echo "deps-key=ios-deps-${CACHE_EPOCH}-${QT_VERSION}-${xcode_version}-${{ hashFiles('packaging/ios/build-deps-ios.sh', 'packaging/ios/patches/**') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore cached dependencies
+        id: deps-cache
+        if: ${{ !inputs.rebuild_deps }}
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/krita-ios/deps-install
+            ~/krita-ios/host-install
+          key: ${{ steps.keys.outputs.deps-key }}
+
+      # build-deps-ios.sh rebuilds only the components whose recipe changed,
+      # so a failed run can be resumed from what it managed to build, and a
+      # change to one recipe only rebuilds that component
+      - name: Restore partially built dependencies
+        if: ${{ steps.deps-cache.outputs.cache-hit != 'true' && !inputs.rebuild_deps }}
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/krita-ios/deps-install
+            ~/krita-ios/host-install
+            ~/krita-ios/deps-stamps
+            ~/krita-ios/downloads
+          key: ${{ steps.keys.outputs.partial-prefix }}${{ github.run_id }}
+          restore-keys: |
+            ${{ steps.keys.outputs.partial-prefix }}
+
+      - name: Install build tools
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: |
+          brew install --quiet ninja meson pkgconf gperf gettext autoconf automake libtool || true
+          cmake --version
+          meson --version
+
+      - uses: actions/setup-python@v5
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        with:
+          python-version: '3.12'
+
+      - name: Restore Qt
+        id: qt-cache
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/Qt
+          key: ${{ steps.keys.outputs.qt-key }}
+
+      - name: Install Qt
+        if: steps.deps-cache.outputs.cache-hit != 'true' && steps.qt-cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade aqtinstall
+          # QT_MODULES is a space-separated list on purpose
+          read -r -a modules <<< "$QT_MODULES"
+          aqt install-qt mac desktop "$QT_VERSION" clang_64 -m "${modules[@]}" -O "$HOME/Qt"
+          aqt install-qt mac ios "$QT_VERSION" ios -m "${modules[@]}" -O "$HOME/Qt"
+          ls "$HOME/Qt/$QT_VERSION"
+
+      - name: Build dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: |
+          packaging/ios/build-deps-ios.sh \
+            --qt-ios="$HOME/Qt/$QT_VERSION/ios" \
+            --qt-host="$HOME/Qt/$QT_VERSION/macos" \
+            --build-root="$HOME/krita-ios" \
+            --deployment-target="$IOS_DEPLOYMENT_TARGET" 2>&1 | tee "$HOME/krita-ios-deps.log"
+
+      - name: Save dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/krita-ios/deps-install
+            ~/krita-ios/host-install
+          key: ${{ steps.keys.outputs.deps-key }}
+
+      - name: Save partially built dependencies
+        if: always() && steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/krita-ios/deps-install
+            ~/krita-ios/host-install
+            ~/krita-ios/deps-stamps
+            ~/krita-ios/downloads
+          key: ${{ steps.keys.outputs.partial-prefix }}${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-deps-logs
+          path: |
+            ~/krita-ios-deps.log
+            ~/krita-ios/deps-build/**/meson-logs/*.txt
+            ~/krita-ios/deps-build/**/CMakeFiles/CMakeConfigureLog.yaml
+            ~/krita-ios/deps-src/**/config.log
+          if-no-files-found: ignore
+
+  krita:
+    name: Build Krita for iOS
+    needs: deps
+    runs-on: macos-15
+    timeout-minutes: 340
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_MAXSIZE: 3G
+      CCACHE_COMPRESS: 'true'
+      CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check Xcode and the iOS SDK
+        run: |
+          xcodebuild -version
+          if ! xcrun --sdk iphoneos --show-sdk-path >/dev/null 2>&1; then
+            xcodebuild -downloadPlatform iOS
+          fi
+          xcrun --sdk iphoneos --show-sdk-path
+
+      - name: Install build tools
+        run: |
+          brew install --quiet ninja ccache gettext || true
+          cmake --version
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Compute cache keys
+        id: keys
+        run: |
+          xcode_version="$(xcodebuild -version | awk 'NR==1' | tr -cd '[:alnum:].')"
+          modules_hash="$(echo "$QT_MODULES" | shasum | cut -c1-8)"
+          echo "qt-key=qt-${CACHE_EPOCH}-${QT_VERSION}-${modules_hash}-${xcode_version}-${{ runner.os }}-${{ runner.arch }}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Qt
+        id: qt-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/Qt
+          key: ${{ steps.keys.outputs.qt-key }}
+
+      - name: Install Qt
+        if: steps.qt-cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade aqtinstall
+          # QT_MODULES is a space-separated list on purpose
+          read -r -a modules <<< "$QT_MODULES"
+          aqt install-qt mac desktop "$QT_VERSION" clang_64 -m "${modules[@]}" -O "$HOME/Qt"
+          aqt install-qt mac ios "$QT_VERSION" ios -m "${modules[@]}" -O "$HOME/Qt"
+
+      - name: Restore dependencies
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/krita-ios/deps-install
+            ~/krita-ios/host-install
+          key: ${{ needs.deps.outputs.deps-key }}
+          fail-on-cache-miss: true
+
+      - name: Restore ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ios-ccache-${{ env.CACHE_EPOCH }}-${{ env.QT_VERSION }}-${{ github.sha }}
+          restore-keys: |
+            ios-ccache-${{ env.CACHE_EPOCH }}-${{ env.QT_VERSION }}-
+
+      - name: Configure Krita
+        run: |
+          packaging/ios/build-krita-ios.sh configure \
+            --qt-ios="$HOME/Qt/$QT_VERSION/ios" \
+            --qt-host="$HOME/Qt/$QT_VERSION/macos" \
+            --build-root="$HOME/krita-ios" \
+            --generator=Ninja \
+            --build-type=Release \
+            --deployment-target="$IOS_DEPLOYMENT_TARGET" \
+            --cmake-args="-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_OBJC_COMPILER_LAUNCHER=ccache -DCMAKE_OBJCXX_COMPILER_LAUNCHER=ccache" \
+            2>&1 | tee "$HOME/krita-ios-configure.log"
+
+      - name: Build Krita
+        # Keep going after errors to see all the failures of one run at once.
+        # Stop early enough to leave time for saving ccache.
+        timeout-minutes: 300
+        run: |
+          ccache -z
+          cmake --build "$HOME/krita-ios/krita-build-iphoneos" --parallel "$(sysctl -n hw.ncpu)" -- -k 0 \
+            2>&1 | tee "$HOME/krita-ios-build.log"
+          ccache -s
+
+      - name: Show the first errors
+        if: failure()
+        run: |
+          grep -n -E "error:|FAILED:" "$HOME/krita-ios-build.log" | head -n 200 || true
+
+      - name: Save ccache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ios-ccache-${{ env.CACHE_EPOCH }}-${{ env.QT_VERSION }}-${{ github.sha }}
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-krita-logs
+          path: |
+            ~/krita-ios-configure.log
+            ~/krita-ios-build.log
+            ~/krita-ios/krita-build-iphoneos/CMakeCache.txt
+            ~/krita-ios/krita-build-iphoneos/CMakeFiles/CMakeConfigureLog.yaml
+          if-no-files-found: ignore
