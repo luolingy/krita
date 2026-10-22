@@ -23,7 +23,8 @@ endif()
 
 if (ANDROID)
     add_subdirectory( donation )
-else()
-    # Both layouts are unsupported since they detach/create a new window
+elseif (NOT IOS)
+    # Both layouts are unsupported on mobile platforms, since they
+    # detach/create a new window
     add_subdirectory( windowlayouts )
 endif()

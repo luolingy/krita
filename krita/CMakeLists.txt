@@ -240,7 +240,8 @@ if (APPLE AND NOT IOS)
     set_target_properties(krita PROPERTIES MACOSX_BUNDLE_COPYRIGHT "GNU Public License, V2 or, at your option, any later version.")
 endif ()
 
-if (NOT ANDROID)
+# Command-line tools cannot be run on mobile platforms
+if (NOT ANDROID AND NOT IOS)
   set(KRITAVERSION_SRCS kritaversion.cpp)
   add_executable(krita_version ${KRITAVERSION_SRCS})
   target_link_libraries(krita_version
